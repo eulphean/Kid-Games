@@ -9,9 +9,12 @@ public class Agent : MonoBehaviour
     public GameObject targetObject;
 
     private Vector3 m_targetPos = new Vector3(0, 0, 0); 
+    private Animator m_animator; 
 
     void Start()
     {
+        m_animator = GetComponent<Animator>(); 
+        m_animator.Play("Running01"); 
         calcTarget();
     }
 
@@ -27,6 +30,14 @@ public class Agent : MonoBehaviour
         {
             Debug.Log("Calculating a new position");
             calcTarget();
+        }
+
+        if (Input.GetKeyDown("1")) {
+            m_animator.Play("Idle01");
+        }
+
+        if (Input.GetKeyDown("2")) {
+            m_animator.Play("Walking01"); 
         }
     }
 
