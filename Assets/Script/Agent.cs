@@ -4,18 +4,18 @@ using UnityEngine;
 
 public class Agent : MonoBehaviour
 {
-    public float searchRadius;
     public float speed;
     public GameObject targetObject;
 
     private Vector3 m_targetPos = new Vector3(0, 0, 0); 
-    private Animator m_animator; 
+    private Animator m_animator;
+    private Callback m_calcTarget; 
 
     void Start()
     {
-        m_animator = GetComponent<Animator>(); 
-        m_animator.Play("Running01"); 
-        calcTarget();
+        // Access the animation from the child Agent component.
+        m_animator = transform.GetChild(0).GetComponent<Animator>();
+        m_animator.Play("Running01");
     }
 
     // Update is called once per frame
@@ -29,39 +29,30 @@ public class Agent : MonoBehaviour
         if (hasReached())
         {
             Debug.Log("Calculating a new position");
-            calcTarget();
-        }
+            Vector2 target = m_calcTarget();
+            this.setTarget(target); 
 
-        if (Input.GetKeyDown("1")) {
-            m_animator.Play("Idle01");
-        }
-
-        if (Input.GetKeyDown("2")) {
-            m_animator.Play("Walking01"); 
         }
     }
 
-    void calcTarget()
+    public void setTarget(Vector2 targetPos)
     {
-        var r = Random.insideUnitCircle * searchRadius;
+        // Set a new target. 
+        m_targetPos.x = targetPos.x;
+        m_targetPos.z = targetPos.y;
 
-        // Calculate random position. 
-        m_targetPos.x = m_targetPos.x + r.x;
-        m_targetPos.z = m_targetPos.z + r.y;
+        rotateBody();
+    }
 
-        // Set the game object to target position.
-        targetObject.transform.localPosition = m_targetPos;
-
-        rotateBody(); 
-
-        Debug.Log("New Position" + targetObject.transform.localPosition); 
+    public void setCallback(Callback calcTarget)
+    {
+        m_calcTarget = calcTarget; 
     }
 
     bool hasReached()
     {
         var curPos = transform.localPosition;
         var d = Vector3.Distance(m_targetPos, curPos); 
-        Debug.Log(d); 
         return d < 0.05; // Threshold distance.
     }
 
@@ -73,3 +64,22 @@ public class Agent : MonoBehaviour
         transform.localRotation = Quaternion.LookRotation(newDirection);
     }
 }
+
+//var r = Random.insideUnitCircle * searchRadius;
+
+//// Calculate random position. 
+//m_targetPos.x = m_targetPos.x + r.x;
+//m_targetPos.z = m_targetPos.z + r.y;
+
+//// Set the game object to target position.
+//targetObject.transform.localPosition = m_targetPos;
+
+//if (Input.GetKeyDown("1"))
+//{
+//    m_animator.Play("Idle01");
+//}
+
+//if (Input.GetKeyDown("2"))
+//{
+//    m_animator.Play("Walking01");
+//}
