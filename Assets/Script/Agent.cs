@@ -2,20 +2,39 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+public enum State {
+   Idle,
+   Run,
+   Walk
+}
+
 public class Agent : MonoBehaviour
 {
+    // Properties from the inspector. 
     public float speed;
     public GameObject targetObject;
 
-    private Vector3 m_targetPos = new Vector3(0, 0, 0); 
+    // Internal variables. 
+    private Callback m_calcTarget;
+    private Vector3 m_targetPos; 
     private Animator m_animator;
-    private Callback m_calcTarget; 
+    private State m_state;
+    private double elapsedTime;
+    private float m_curSpeed;
 
     void Start()
     {
+        m_targetPos = new Vector3(0, 0, 0); 
+        m_curSpeed = speed;
+
+        // Calculate new state 
+        float p = Random.Range(0.0f, 1.0f) ;
+        m_state = p <= 0.5 ? State.Walk : State.Run;
+        this.setTarget(m_calcTarget());
+        
         // Access the animation from the child Agent component.
         m_animator = transform.GetChild(0).GetComponent<Animator>();
-        m_animator.Play("Running01");
+        this.setAnimation();
     }
 
     // Update is called once per frame
@@ -23,30 +42,32 @@ public class Agent : MonoBehaviour
     {
         var currentPosition = transform.localPosition;
         var targetDirection = (m_targetPos - currentPosition).normalized;
-        transform.localPosition = transform.localPosition + speed * targetDirection * Time.deltaTime;
+        transform.localPosition = transform.localPosition + m_curSpeed * targetDirection * Time.deltaTime;
 
         // Has reached?
         if (hasReached())
         {
-            Debug.Log("Calculating a new position");
-            Vector2 target = m_calcTarget();
-            this.setTarget(target); 
+            if (m_state == State.Walk || m_state == State.Run)
+            {
+                // Spend time idling. 
+                m_state = State.Idle;
+                elapsedTime = 0;
+                m_curSpeed = 0;
+            } else if (elapsedTime > 5) {
+                float p = Random.Range(0.0f, 1.0f);
+                m_state = p <= 0.5 ? State.Run : State.Walk;
 
+                // New target. 
+                Vector2 target = m_calcTarget();
+                this.setTarget(target);
+
+                m_curSpeed = speed;
+            }
+
+            this.setAnimation();
         }
-    }
 
-    public void setTarget(Vector2 targetPos)
-    {
-        // Set a new target. 
-        m_targetPos.x = targetPos.x;
-        m_targetPos.z = targetPos.y;
-
-        rotateBody();
-    }
-
-    public void setCallback(Callback calcTarget)
-    {
-        m_calcTarget = calcTarget; 
+        elapsedTime = (m_state == State.Idle) ? elapsedTime + Time.deltaTime : 0;
     }
 
     bool hasReached()
@@ -56,30 +77,50 @@ public class Agent : MonoBehaviour
         return d < 0.05; // Threshold distance.
     }
 
-    void rotateBody() {
-        // Calculate new direction. 
+    void rotateBody()
+    {
         var currentPosition = transform.localPosition;
-        var targetDirection = m_targetPos - currentPosition;
-        var newDirection = Vector3.RotateTowards(transform.forward, targetDirection, 999, 999);
-        transform.localRotation = Quaternion.LookRotation(newDirection);
+        var targetDirection = (m_targetPos - currentPosition).normalized;
+        transform.localRotation = Quaternion.LookRotation(targetDirection, Vector3.up);
+    }
+
+    public void setTarget(Vector2 targetPos)
+    {
+        // Set a new target. 
+        m_targetPos.x = targetPos.x;
+        m_targetPos.z = targetPos.y;
+
+        this.rotateBody();
+    }
+
+    public void setCallback(Callback calcTarget)
+    {
+        m_calcTarget = calcTarget;
+    }
+
+    void setAnimation()
+    {
+        switch (m_state)
+        {
+            case State.Run:
+            {
+                m_animator.Play("Running01");
+                break;
+            }
+            case State.Walk:
+            {
+                m_animator.Play("Walking01");
+                break;
+            }
+            case State.Idle:
+            {
+                m_animator.Play("Idle01");
+                break;
+            }
+            default:
+            {
+                break;
+            }
+        }
     }
 }
-
-//var r = Random.insideUnitCircle * searchRadius;
-
-//// Calculate random position. 
-//m_targetPos.x = m_targetPos.x + r.x;
-//m_targetPos.z = m_targetPos.z + r.y;
-
-//// Set the game object to target position.
-//targetObject.transform.localPosition = m_targetPos;
-
-//if (Input.GetKeyDown("1"))
-//{
-//    m_animator.Play("Idle01");
-//}
-
-//if (Input.GetKeyDown("2"))
-//{
-//    m_animator.Play("Walking01");
-//}
