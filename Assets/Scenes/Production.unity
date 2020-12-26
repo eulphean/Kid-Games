@@ -120,7 +120,7 @@ NavMeshSettings:
     accuratePlacement: 0
     debug:
       m_Flags: 0
-  m_NavMeshData: {fileID: 0}
+  m_NavMeshData: {fileID: 23800000, guid: 42fecfa296bcc4b2e85f7aa7940d3c8a, type: 2}
 --- !u!1 &65784059
 GameObject:
   m_ObjectHideFlags: 0
@@ -502,7 +502,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8d75045a3dd18439189cb3d70435c97d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  placedPrefab: {fileID: 7003425533146421862, guid: 61bd7a8da1903466192e5ca8829c7d5f,
+  placedPrefab: {fileID: 8954468257401441016, guid: c373b37dd6e1f4ae2a4ef53838b4e813,
     type: 3}
 --- !u!1 &1007003370
 GameObject:
