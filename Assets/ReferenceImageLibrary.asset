@@ -16,12 +16,12 @@ MonoBehaviour:
   m_GuidHigh: 14362208905288231313
   m_Images:
   - m_SerializedGuid:
-      m_GuidLow: 5399026361207701088
-      m_GuidHigh: 10622672560972736139
+      m_GuidLow: 5093321529428491038
+      m_GuidHigh: 2184474289915853709
     m_SerializedTextureGuid:
-      m_GuidLow: 4919547671937251084
-      m_GuidHigh: 6610429612634470969
-    m_Size: {x: 0.1524, y: 0.1524}
+      m_GuidLow: 14171868030618386317
+      m_GuidHigh: 8515552624263322777
+    m_Size: {x: 0.3048, y: 0.3048}
     m_SpecifySize: 1
-    m_Name: Silkcube
-    m_Texture: {fileID: 0}
+    m_Name: section3
+    m_Texture: {fileID: 2800000, guid: 58b93f8d96e3c4ac995c5c93fe512d76, type: 3}
