@@ -30,7 +30,7 @@ public class Agent : MonoBehaviour
         // Calculate new state 
         float p = Random.Range(0.0f, 1.0f) ;
         m_state = p <= 0.5 ? State.Walk : State.Run;
-        this.setTarget(m_calcTarget());
+        this.setTarget(m_calcTarget(gameObject.name));
         
         // Access the animation from the child Agent component.
         m_animator = transform.GetChild(0).GetComponent<Animator>();
@@ -58,7 +58,7 @@ public class Agent : MonoBehaviour
                 m_state = p <= 0.5 ? State.Run : State.Walk;
 
                 // New target. 
-                Vector2 target = m_calcTarget();
+                Vector2 target = m_calcTarget(gameObject.name);
                 this.setTarget(target);
 
                 m_curSpeed = speed;

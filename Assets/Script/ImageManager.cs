@@ -3,6 +3,7 @@ using UnityEngine.XR.ARSubsystems;
 using UnityEngine.XR.ARFoundation;
 
 [RequireComponent(typeof(ARTrackedImageManager))]
+[RequireComponent(typeof(ARSessionOrigin))]
 public class ImageManager : MonoBehaviour
 {
 
@@ -12,10 +13,12 @@ public class ImageManager : MonoBehaviour
     public GameObject placedPrefab;
     private GameObject _instance = null;
     private Pose _pose;
+    private ARSessionOrigin _sessionOrigin; 
 
     void Awake()
     {
         m_TrackedImageManager = GetComponent<ARTrackedImageManager>();
+        _sessionOrigin = GetComponent<ARSessionOrigin>(); 
     }
 
     void OnEnable()
@@ -34,22 +37,19 @@ public class ImageManager : MonoBehaviour
         if (_instance == null) {
             Vector3 position = trackedImage.transform.localPosition;
             Quaternion rotation = trackedImage.transform.localRotation;
+
             _pose = new Pose(position, rotation);
 
-            _instance = Instantiate(placedPrefab, _pose.position, _pose.rotation);
-            _instance.transform.localScale = new Vector3(0.55f, 0.55f, 0.55f);
+            _instance = Instantiate(placedPrefab, _pose.position, _pose.rotation, trackedImage.transform);
             _instance.name = placedPrefab.name;
-
-            _instance.isStatic = true;
-            _instance.SetActive(true);
-
-            _instance.transform.SetParent(trackedImage.transform);
 
             if (_instance.GetComponent<ARAnchor>() == null)
             {
                 _instance.AddComponent<ARAnchor>();
             }
         }
+
+        //_sessionOrigin.MakeContentAppearAt(_instance.transform, new Vector3(0, 0, 0));
     }
 
     void OnTrackedImagesChanged(ARTrackedImagesChangedEventArgs eventArgs)

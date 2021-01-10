@@ -30,10 +30,14 @@ public class Kid : MonoBehaviour
 
     // Callback to create new position. 
     private Callback m_calcTarget;
-    private Vector3 _target; 
+    private Vector3 _target;
 
+    //private const float WalkSpeed = 0.1f; 
+    //private const float RunSpeed = 0.18f;
     private const float WalkSpeed = 0.1f; 
     private const float RunSpeed = 0.18f;
+
+    private GameObject _debugTargetObject;
     
 
     void Start()
@@ -48,37 +52,42 @@ public class Kid : MonoBehaviour
         setAnimation();
 
         _elapsedTime = 0; 
-        _agent.ResetPath();
         _agent.SetDestination(_target);
+        _debugTargetObject.transform.position = _target;
     }
 
     void Update()
     {
-        bool hasReached = Vector3.Distance(gameObject.transform.localPosition, _target) < 0.1; 
-        if (hasReached) {
-            if (isAgentInMotion()) {
-                chooseIdleState();
-                _agent.speed = 0.0f;
-                _moveState = MoveState.None; 
-                _elapsedTime = 0; 
-                this.setAnimation(); 
-            } else if (_elapsedTime > 5) {
-                chooseIdleState();
-                chooseMotionState(); 
-                this.setTarget(m_calcTarget()); // Callback to create a new target. 
-                _agent.SetDestination(_target);
-                this.setAnimation(); 
-            }
+        //float d = Vector3.Distance(_agent.p.transform.localPosition, _target);
+        float d = Vector3.Distance(_agent.nextPosition, _agent.pathEndPosition);
+        if (d < 0.1)
+        {
+            print("Reached. New Target");
+            chooseIdleState();
+            chooseMotionState();
+            this.setTarget(m_calcTarget(gameObject.name)); // Callback to create a new target.
+            _agent.SetDestination(_target);
+            this.setAnimation();
+
+            _debugTargetObject.transform.position = _target;
         }
-        _elapsedTime = !isAgentInMotion() ? _elapsedTime + Time.deltaTime : 0; 
     }
 
     public void setTarget(Vector3 t) {
         _target.Set(t.x, t.y, t.z);
     }
 
+    public void setTargetObject(GameObject o)
+    {
+        _debugTargetObject = o; 
+    }
+
     public void setCallback(Callback c) {
         m_calcTarget = c; 
+    }
+
+    public void setPosition(Vector3 pos) {
+       //_initPosition = pos; 
     }
 
     void chooseIdleState() {
@@ -204,3 +213,24 @@ public class Kid : MonoBehaviour
         }
     }
 }
+
+
+//// bool hasReached = d < 0.1;
+// if (d < 0.1) {
+//     if (isAgentInMotion()) {
+//         print("Set Idle"); 
+//         chooseIdleState();
+//         _agent.speed = 0.0f;
+//         _moveState = MoveState.None; 
+//         _elapsedTime = 0; 
+//         this.setAnimation(); 
+//     } else if (_elapsedTime > 5) {
+//         print("Waiting");
+//         chooseIdleState();
+//         chooseMotionState(); 
+//         this.setTarget(m_calcTarget(gameObject.name)); // Callback to create a new target. 
+//         _agent.SetDestination(_target);
+//         this.setAnimation(); 
+//     }
+// }
+// _elapsedTime = !isAgentInMotion() ? _elapsedTime + Time.deltaTime : 0; 
