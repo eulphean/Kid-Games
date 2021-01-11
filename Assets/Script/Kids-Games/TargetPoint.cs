@@ -5,7 +5,8 @@ using UnityEngine;
 public class TargetPoint : MonoBehaviour
 {
     [SerializeField]
-    public float radius; 
+    public float radius;
+    public List<TargetPoint> neighbors; 
 
     void OnDrawGizmos() {
         Gizmos.color = Color.red; 

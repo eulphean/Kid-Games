@@ -40,16 +40,17 @@ public class ImageManager : MonoBehaviour
 
             _pose = new Pose(position, rotation);
 
-            _instance = Instantiate(placedPrefab, _pose.position, _pose.rotation, trackedImage.transform);
+            _instance = Instantiate(placedPrefab, trackedImage.transform);
             _instance.name = placedPrefab.name;
 
             if (_instance.GetComponent<ARAnchor>() == null)
             {
                 _instance.AddComponent<ARAnchor>();
             }
-        }
 
-        //_sessionOrigin.MakeContentAppearAt(_instance.transform, new Vector3(0, 0, 0));
+            _sessionOrigin.MakeContentAppearAt(_instance.transform, _pose.position, _pose.rotation);
+
+        }
     }
 
     void OnTrackedImagesChanged(ARTrackedImagesChangedEventArgs eventArgs)

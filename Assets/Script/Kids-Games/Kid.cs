@@ -25,7 +25,6 @@ public class Kid : MonoBehaviour
     private IdleState _idleState; 
 
     // Agent that does everything. 
-    private NavMeshAgent _agent; 
     private double _elapsedTime; 
 
     // Callback to create new position. 
@@ -34,17 +33,27 @@ public class Kid : MonoBehaviour
 
     //private const float WalkSpeed = 0.1f; 
     //private const float RunSpeed = 0.18f;
-    private const float WalkSpeed = 0.1f; 
-    private const float RunSpeed = 0.18f;
+    private const float Walk01 = 0.05f;
+    private const float Walk02 = 0.1f;
+    private const float Walk03 = 0.12f;
+    private const float Run01 = 0.15f;
+    private const float Run02 = 0.18f;
+    private const float Run03 = 0.30f;
+
+    public float _agentSpeed = 0.0f; 
 
     private GameObject _debugTargetObject;
+    private bool _hasAnimationStarted = false;
+    private Renderer _renderer;
+
+    private Quaternion _newRotation; 
     
 
     void Start()
     {
         // Get helper components. 
-        _agent = this.GetComponent<NavMeshAgent>(); 
-        _animator = this.transform.GetChild(0).GetComponent<Animator>(); 
+        _animator = this.transform.GetChild(0).GetComponent<Animator>();
+        _renderer = GetComponent<Renderer>();
 
         // Set intial state. 
         chooseIdleState(); 
@@ -52,29 +61,72 @@ public class Kid : MonoBehaviour
         setAnimation();
 
         _elapsedTime = 0; 
-        _agent.SetDestination(_target);
-        _debugTargetObject.transform.position = _target;
     }
 
     void Update()
     {
-        //float d = Vector3.Distance(_agent.p.transform.localPosition, _target);
-        float d = Vector3.Distance(_agent.nextPosition, _agent.pathEndPosition);
-        if (d < 0.1)
+        if (!_hasAnimationStarted)
         {
-            print("Reached. New Target");
-            chooseIdleState();
-            chooseMotionState();
-            this.setTarget(m_calcTarget(gameObject.name)); // Callback to create a new target.
-            _agent.SetDestination(_target);
-            this.setAnimation();
-
-            _debugTargetObject.transform.position = _target;
+            float t = _animator.GetCurrentAnimatorStateInfo(0).normalizedTime;
+            if (t > 0.9f)
+            {
+                _hasAnimationStarted = true;
+            }
+        } else
+        {
+            // Update positions. 
+            var currentPosition = transform.localPosition;
+            var targetDirection = (_target - currentPosition).normalized;
+            transform.localPosition = transform.localPosition + _agentSpeed * targetDirection * Time.deltaTime;
         }
+
+        // Move the agent to the destination
+        // Check if the agnet has reached. 
+        if (hasReached())
+        {
+            print("Agent reached"); 
+            if (isAgentInMotion())
+            {
+                print("Set Idle");
+                chooseIdleState();
+                _agentSpeed = 0.0f;
+                _moveState = MoveState.None;
+                _elapsedTime = 0;
+                this.setAnimation();
+            }
+            else if (_elapsedTime > 5)
+            {
+                print("Waiting");
+                chooseIdleState();
+                chooseMotionState();
+                this.setTarget(m_calcTarget(gameObject.name)); // Callback to create a new target. 
+                this.setAnimation();
+            }
+        }
+
+        transform.localRotation = Quaternion.Lerp(transform.localRotation, _newRotation, _agentSpeed); 
+
+        _elapsedTime = !isAgentInMotion() ? _elapsedTime + Time.deltaTime : 0; 
+    }
+
+    bool hasReached()
+    {
+        var curPos = transform.localPosition;
+        var d = Vector3.Distance(_target, curPos);
+        return d < 0.05; // Threshold distance.
+    }
+
+    void rotateBody()
+    {
+        var currentPosition = transform.localPosition;
+        var targetDirection = (_target - currentPosition).normalized;
+        _newRotation = Quaternion.LookRotation(targetDirection, Vector3.up);
     }
 
     public void setTarget(Vector3 t) {
         _target.Set(t.x, t.y, t.z);
+        _debugTargetObject.transform.localPosition = _target;
+        this.rotateBody(); 
     }
 
     public void setTargetObject(GameObject o)
@@ -86,16 +138,14 @@ public class Kid : MonoBehaviour
         m_calcTarget = c; 
     }
 
-    public void setPosition(Vector3 pos) {
-       //_initPosition = pos; 
-    }
-
     void chooseIdleState() {
         // Idle01, Idle02, Idle03
         float p = Random.Range(0.0f, 1.0f);
         _idleState = (p >= 0 && p < 0.33) ? IdleState.Idle01 : 
                      (p >= 0.33 && p < 0.66) ? IdleState.Idle02 : 
-                      IdleState.Idle03; 
+                      IdleState.Idle03;
+
+        print("Idle State: " + _idleState); 
     }
 
     void chooseMotionState() {
@@ -107,7 +157,9 @@ public class Kid : MonoBehaviour
             setMoveState(2);
         } else {
             setMoveState(3); 
-        }                      
+        }
+
+        print("Motion State: " + _moveState);
     }
 
     void setMoveState(int num) {
@@ -173,37 +225,37 @@ public class Kid : MonoBehaviour
 
             case MoveState.Walk01: {
                 _animator.SetBool("isWalking01", true);
-                _agent.speed = WalkSpeed; 
+                _agentSpeed = Walk01; 
                 break;
             }
 
             case MoveState.Run01: {
                 _animator.SetBool("isRunning01", true); 
-                _agent.speed = RunSpeed;
+                _agentSpeed = Run01;
                 break;
             }
 
             case MoveState.Walk02: {
                 _animator.SetBool("isWalking02", true);
-                _agent.speed = WalkSpeed;
+                _agentSpeed = Walk02;
                 break;
             }
 
             case MoveState.Run02: {
                 _animator.SetBool("isRunning02", true);
-                _agent.speed = RunSpeed; 
+                _agentSpeed = Run02; 
                 break;
             }
 
             case MoveState.Walk03: {
                 _animator.SetBool("isWalking03", true);
-                _agent.speed = WalkSpeed; 
+                _agentSpeed = Walk03; 
                 break;
             }
 
             case MoveState.Run03: {
                 _animator.SetBool("isRunning03", true);
-                _agent.speed = RunSpeed; 
+                _agentSpeed = Run03; 
                 break;
             }
 
@@ -213,24 +265,3 @@ public class Kid : MonoBehaviour
         }
     }
 }
-
-
-//// bool hasReached = d < 0.1;
-// if (d < 0.1) {
-//     if (isAgentInMotion()) {
-//         print("Set Idle"); 
-//         chooseIdleState();
-//         _agent.speed = 0.0f;
-//         _moveState = MoveState.None; 
-//         _elapsedTime = 0; 
-//         this.setAnimation(); 
-//     } else if (_elapsedTime > 5) {
-//         print("Waiting");
-//         chooseIdleState();
-//         chooseMotionState(); 
-//         this.setTarget(m_calcTarget(gameObject.name)); // Callback to create a new target. 
-//         _agent.SetDestination(_target);
-//         this.setAnimation(); 
-//     }
-// }
-// _elapsedTime = !isAgentInMotion() ? _elapsedTime + Time.deltaTime : 0; 

@@ -5,7 +5,8 @@ using UnityEngine;
 public class SpawnPoint : MonoBehaviour
 {
     [SerializeField]
-    public float radius; 
+    public float radius;
+    public List<TargetPoint> initialTargets; 
 
     void OnDrawGizmos() {
         Gizmos.color = Color.green; 
