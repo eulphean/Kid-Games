@@ -246,7 +246,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   directoryPath: /Users/amaykataria/Desktop/cameraA
   resolutionFactor: 1
-  updateDeltaTime: 0.1
+  updateDeltaTime: 0.01
 --- !u!81 &416200951
 AudioListener:
   m_ObjectHideFlags: 0
