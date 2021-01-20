@@ -84,10 +84,10 @@ public class Kid : MonoBehaviour
         // Check if the agnet has reached. 
         if (hasReached())
         {
-            print("Agent reached"); 
+            //print("Agent reached"); 
             if (isAgentInMotion())
             {
-                print("Set Idle");
+                //print("Set Idle");
                 chooseIdleState();
                 _agentSpeed = 0.0f;
                 _moveState = MoveState.None;
@@ -96,7 +96,7 @@ public class Kid : MonoBehaviour
             }
             else if (_elapsedTime > 5)
             {
-                print("Waiting");
+                //print("Waiting");
                 chooseIdleState();
                 chooseMotionState();
                 this.setTarget(m_calcTarget(gameObject.name)); // Callback to create a new target. 
@@ -105,8 +105,7 @@ public class Kid : MonoBehaviour
         }
 
         transform.localRotation = Quaternion.Lerp(transform.localRotation, _newRotation, _agentSpeed); 
-
-        _elapsedTime = !isAgentInMotion() ? _elapsedTime + Time.deltaTime : 0; 
+        _elapsedTime = !isAgentInMotion() ? _elapsedTime + Time.deltaTime : 0;
     }
 
     bool hasReached()
@@ -145,7 +144,7 @@ public class Kid : MonoBehaviour
                      (p >= 0.33 && p < 0.66) ? IdleState.Idle02 : 
                       IdleState.Idle03;
 
-        print("Idle State: " + _idleState); 
+        //print("Idle State: " + _idleState); 
     }
 
     void chooseMotionState() {
@@ -159,7 +158,7 @@ public class Kid : MonoBehaviour
             setMoveState(3); 
         }
 
-        print("Motion State: " + _moveState);
+        //print("Motion State: " + _moveState);
     }
 
     void setMoveState(int num) {

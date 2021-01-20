@@ -1,10 +1,12 @@
 ﻿// Author: Amay Kataria
 // Date: January 18, 2021
-// Description: Helper script to capture on the camera.
-// Provide a path where you want the frames to be dropped.
-// Provide a folder name in which the frames should be created. If it's null, it'll use current system time to
-// create a folder. 
-
+// Description: Helper script to take screenshots of a scene. Attach this script to the camera object. Multiple cameras are supported. Every screenshot saved is denoted by the frame number. 
+// "Directory Path:" Provide the exact directory where you want the frames to be dropped (NOTE: Watch out for the empty space before the path and after the path). 
+// For every run, new folders are created with the current timestamp where all screenshots are saved. For multitple cameras, give two unique directory paths.
+// Script will produce an error if it doesn't find a valid directory path.
+// "Resolution Factor:" Change to increase the resolution of the image capture. 
+// "Update Delta Time:" Most critical number here. This defines the amount of time between each update loop. In every update loop, we create a screenshot.
+// A smaller number means a smoother stream of capture and a bigger number means smaller intervals between each capture. Play around with this number to get the right feel for it.
 using UnityEngine;
 using System.Collections;
 using System.IO;
@@ -13,18 +15,20 @@ using System;
 public class ScreenRecorder : MonoBehaviour
 {
     public string directoryPath = "Null";
-    public int resolutionFactor = 1; 
+    public int resolutionFactor = 1;
+    public float updateDeltaTime = 0.033f; 
 
-    //amount of frames you want to record before closing the game
-    private bool active = false; 
-    private int _frameNum = 0;
+    private bool _capturing = false; 
     private DirectoryInfo _curDir;
     private Camera _camera;
     private int _resWidth;
-    private int _resHeight; 
+    private int _resHeight;
+    private Texture2D screenShot;
 
     void Awake()
     {
+        print("Directory: " + directoryPath);
+
         // Check if we have received a valid path. 
         if (!Directory.Exists(directoryPath))
         {
@@ -40,42 +44,48 @@ public class ScreenRecorder : MonoBehaviour
         // Store camera.
         _camera = GetComponent<Camera>();
         _resWidth = _camera.pixelWidth * resolutionFactor;
-        _resHeight = _camera.pixelHeight * resolutionFactor; 
+        _resHeight = _camera.pixelHeight * resolutionFactor;
+        screenShot = new Texture2D(_resWidth, _resHeight, TextureFormat.RGB24, false);
     }
 
     void Update()
     {
-        //if (Keyboard.current.pKey.wasPressedThisFrame)
-        //{
-        //    active = !active;
-        //    if (active) Time.captureFramerate = 60;
-        //}
+        if (Input.GetKeyDown("space"))
+        {
+            _capturing = !_capturing;
+            if (_capturing)
+            {
+                print("Begin Capture.");
+                Time.captureDeltaTime = updateDeltaTime;
+            } else
+            {
+                print("Stop Capture.");
+                Time.captureDeltaTime = 0.0f;
+            }
+        }
 
-        //if (!active)
-        //    return;
-        capture();
-
-        // Next frame. 
-        _frameNum++; 
+        if (_capturing)
+        {
+            capture();
+        }
     }
 
     void capture()
     {
-        string filename = _curDir.FullName + "/" + _frameNum + ".png";
-        RenderTexture rt = new RenderTexture(_resWidth, _resHeight, 24);
+        string filename = _curDir.FullName + "/" + Time.renderedFrameCount + ".png";
+        RenderTexture rt = RenderTexture.GetTemporary(_resWidth, _resHeight, 24);
         _camera.targetTexture = rt;
         _camera.Render();
-        Texture2D screenShot = new Texture2D(_resWidth, _resHeight, TextureFormat.RGB24, false);
         RenderTexture.active = rt;
+
         screenShot.ReadPixels(_camera.pixelRect, 0, 0);
         screenShot.Apply();
+
         byte[] bytes = screenShot.EncodeToPNG();
         File.WriteAllBytes(filename, bytes);
+
         _camera.targetTexture = null;
         RenderTexture.active = null;
         rt.Release();
     }
 }
-
-
-//ScreenCapture.CaptureScreenshot(fileName, resolutionFactor);
