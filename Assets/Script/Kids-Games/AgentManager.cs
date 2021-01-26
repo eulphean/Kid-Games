@@ -33,6 +33,7 @@ public class AgentManager : MonoBehaviour
             Vector3 curPos = calcSpawnPosition(name, out spawnPoint);
             GameObject a = Instantiate(agentPrefabs[idx], curPos, Quaternion.identity, transform);
             a.name = name;
+            a.layer = 8;
 
             // Calculate initial target. 
             List<TargetPoint> initTargets = spawnPoint.initialTargets;
